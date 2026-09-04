@@ -10,7 +10,7 @@
 # Base: pinned Node on Alpine. Alpine keeps the image ~180 MB; `libc6-compat`
 # keeps any native module that slipped in working.
 # ---------------------------------------------------------------------------
-FROM node:22-alpine AS base
+FROM node:26-alpine AS base
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
