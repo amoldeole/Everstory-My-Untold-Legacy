@@ -1,0 +1,11 @@
+.next
+out
+dist
+build
+coverage
+node_modules
+.data
+.scratch
+package-lock.json
+drizzle
+*.log
