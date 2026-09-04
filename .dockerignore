@@ -1,0 +1,40 @@
+# Everything Docker does not need. Keeps the build context small and stops
+# local secrets and local database files leaking into an image layer.
+
+.git
+.github
+.gitignore
+.gitattributes
+.editorconfig
+
+node_modules
+.next
+out
+dist
+coverage
+
+# Local state — never bake this into an image
+.data
+*.db
+*.sqlite
+.env
+.env.*
+!.env.example
+
+# Editors and operating systems
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Docs and scratch
+*.md
+!README.md
+docs
+.scratch
+tests
+scripts/smoke.mjs
+
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

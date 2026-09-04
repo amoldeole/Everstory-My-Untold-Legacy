@@ -1,0 +1,58 @@
+# Local, production-shaped stack.
+#
+#   docker compose up --build
+#
+# This is the closest thing to "run it exactly like I will in production",
+# and it is the same image CI pushes to GHCR.
+#
+# If you would rather not run Postgres at all, see the README: unset
+# DATABASE_URL and Everstory falls back to an embedded database that needs
+# no containers.
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: everstory
+      POSTGRES_PASSWORD: everstory
+      POSTGRES_DB: everstory
+    volumes:
+      - everstory-db:/var/lib/postgresql/data
+    healthcheck:
+      # `pg_isready` only tells us the server is accepting connections, which
+      # is exactly the signal the app needs before it starts migrating.
+      test: ["CMD-SHELL", "pg_isready -U everstory -d everstory"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      # Inside Compose, the service name is the hostname.
+      DATABASE_URL: postgres://everstory:everstory@db:5432/everstory
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      AUTH_MODE: ${AUTH_MODE:-credentials}
+      ALLOW_SIGNUP: ${ALLOW_SIGNUP:-true}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-disk}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-30}
+    volumes:
+      # Uploads and any local-only state live here. Back this up.
+      - everstory-data:/app/.data
+    ports:
+      - "3000:3000"
+
+volumes:
+  everstory-db:
+  everstory-data:
